@@ -1,12 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:mezat_app/entities/muzayede.dart';
 import 'package:mezat_app/main.dart';
 import 'package:mezat_app/drawer_menu.dart';
 import 'package:mezat_app/models/page_model.dart';
+import 'package:mezat_app/services/muzayede_service.dart';
 
 import 'canli_muzayede.dart';
 
 class Home extends StatelessWidget {
   BuildContext context;
+  List<Muzayede> muzayedeList = new List<Muzayede>();
   DrawerMenu _drawer = MyApp.getDrawerState();
   @override
   Widget build(BuildContext context) {
@@ -28,25 +33,34 @@ class Home extends StatelessWidget {
 
   buildGridViewItems(){
     List<Widget> items = List();
-    for(int i=0;i<21;i++){
+    for(int i=0;i<muzayedeList.length;i++){
       items.add(
-        buildCard(i)
+        buildCard(muzayedeList[i])
       );
     }
     return items;
   }
 
-  buildCard(int i){
+  getallMuzayede(){
+    MuzayedeService.getall().then((value) => {
+      _drawer.drawerMenuState.setState(() {
+        Iterable list = json.decode(value.body);
+        muzayedeList = list.map((model) => Muzayede.fromJson(model)).toList();
+      })
+    });
+  }
+
+  buildCard(Muzayede muzayede){
     return GestureDetector(
       onTap: ()=>{
-            _drawer.drawerMenuState.onSelectItem(PageModel(CanliMuzayede(i),"Canlı Müzayede"))
+            _drawer.drawerMenuState.onSelectItem(PageModel(CanliMuzayede(muzayede.muzayedeId),"Canlı Müzayede"))
       },
       child: Card(
         color: Colors.blueGrey,
         elevation: 5.0,
         child: Center(
           child: Text(
-            "Muzayede " + i.toString(),
+            muzayede.muzayedeAdi,
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 25
